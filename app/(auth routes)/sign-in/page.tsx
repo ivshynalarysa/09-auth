@@ -93,7 +93,13 @@ const SignIn = () => {
 
 				<div className={css.formGroup}>
 					<label htmlFor="password">Password</label>
-					<input id="password" type="password" name="password" className={css.input} required />
+					<input id="password"
+						type="password"
+						name="password"
+						className={css.input} required
+						value={formLoginData.password}
+						onChange={handleChange}
+					/>
 				</div>
 
 				<div className={css.actions}>

@@ -35,8 +35,7 @@ export async function generateMetadata({ params }: NotesProps): Promise<Metadata
 export default async function Notes({ params }: NotesProps) {
 	const { slug } = await params;
 	const queryClient = new QueryClient();
-	const initialQuery: string = '';
-	const initialPage: number = 1;
+	
 	const tag: string = slug[0] === 'all' ? '' : slug[0];
 
 	await queryClient.prefetchQuery({
@@ -44,10 +43,7 @@ export default async function Notes({ params }: NotesProps) {
 		queryFn: () => fetchNotes('', 1, tag),
 	});
 
-	const initialData = queryClient.getQueryData(['notes', initialQuery, initialPage, tag]) as {
-		notes: Note[];
-		totalPages: number;
-	};
+	
 
 	return (
 		<HydrationBoundary state={dehydrate(queryClient)}>

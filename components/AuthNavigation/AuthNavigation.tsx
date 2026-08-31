@@ -18,8 +18,8 @@ const AuthNavigation = () => {
 	});
 	const router = useRouter();
 
-	const handleLogout = () => {
-		logout();
+	const handleLogout = async () => {
+		await logout();
 		clear();
 		router.push('/sign-in');
 		router.refresh();
