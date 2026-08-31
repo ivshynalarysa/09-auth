@@ -26,7 +26,7 @@ export async function proxy(request: NextRequest) {
 
   // Авторизований користувач не може відкривати сторінки авторизації
   if (isAuthRoute && accessToken) {
-    return NextResponse.redirect(new URL('/profile', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
   // Захист приватних маршрутів
