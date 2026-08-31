@@ -1,5 +1,3 @@
-// proxy.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
@@ -14,28 +12,27 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  const isPrivateRoute = privateRoutes.some((route) =>
+  const isPrivateRoute = privateRoutes.some(route =>
     pathname.startsWith(route)
   );
 
-  const isAuthRoute = authRoutes.some((route) =>
+  const isAuthRoute = authRoutes.some(route =>
     pathname.startsWith(route)
   );
 
-  // Якщо користувач авторизований і відкриває sign-in/sign-up
+  // Авторизований користувач не повинен відкривати sign-in/sign-up
   if (isAuthRoute && accessToken) {
-    return NextResponse.redirect(new URL('/profile', request.url));
+    return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // Приватний маршрут
+  // Перевірка приватних маршрутів
   if (isPrivateRoute) {
     // Access token є — дозволяємо доступ
     if (accessToken) {
       return NextResponse.next();
     }
 
-    // Access token немає, але є refresh token —
-    // пробуємо поновити сесію
+    // Access token немає, але є refresh token
     if (refreshToken) {
       try {
         const response = await fetch(
@@ -54,18 +51,31 @@ export async function proxy(request: NextRequest) {
           const setCookie = response.headers.get('set-cookie');
 
           if (setCookie) {
-            nextResponse.headers.set('set-cookie', setCookie);
+            const cookiesFromResponse = setCookie.split(/,(?=\s*\w+=)/);
+
+            cookiesFromResponse.forEach(cookie => {
+              const [nameValue] = cookie.split(';');
+              const [name, ...valueParts] = nameValue.split('=');
+
+              if (name && valueParts.length > 0) {
+                nextResponse.cookies.set(
+                  name.trim(),
+                  valueParts.join('=').trim()
+                );
+              }
+            });
           }
 
           return nextResponse;
         }
       } catch {
-        // Якщо refresh не вдався — переходимо до sign-in
+        // Refresh failed — redirect to sign-in
       }
     }
 
-    // Немає access token і refresh не вдався
-    return NextResponse.redirect(new URL('/sign-in', request.url));
+    return NextResponse.redirect(
+      new URL('/sign-in', request.url)
+    );
   }
 
   return NextResponse.next();
